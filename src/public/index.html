@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./assets/bootstrap.css" />
+    <script src="./assets/jquery.js"></script>
+    <script src="./assets/popper.js"></script>
+    <script src="./assets/bootstrap.js"></script>
+    <script src="./assets/vue.js"></script>
+    <script src="./assets/axios.js"></script>
+    <title>System Monitoring</title>
+    <style>
+      body {
+        background-color: #f8f9f9;
+      }
+      .badge {
+        border: none;
+        border-radius: 0px !important;
+      }
+      .card {
+        height: 100%;
+        border: none;
+        border-radius: 0px !important;
+        box-shadow: 5px 5px 12px 0px rgba(0, 0, 0, 0.08);
+      }
+      .loading {
+        z-index: 10;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="loading" v-if="loading">
+        <div class="spinner-grow text-light" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <div class="spinner-grow text-light ml-2 mr-2" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <div class="spinner-grow text-light" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+      <nav class="navbar navbar-dark bg-dark mb-2">
+        <a class="navbar-brand" href="/">System Monitor</a>
+      </nav>
+      <div class="container mt-3" :style="{ zIndex: 5 }">
+        <div class="row">
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">SYSTEM</h5>
+                <div class="d-flex">
+                  <p class="card-subtitle font-size-sm mb-2 text-muted">
+                    Platform
+                  </p>
+                  <span class="ml-auto mr-5 text-capitalize"
+                    >{{ systemData.platform }}</span
+                  >
+                </div>
+                <div class="d-flex">
+                  <p class="card-subtitle font-size-sm mb-2 text-muted">
+                    UP Time
+                  </p>
+                  <span class="ml-auto mr-5">
+                    {{ (systemData.sysUptime/3600).toFixed(3) }} mins
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <p class="card-subtitle font-size-sm mb-2 text-muted">
+                    Average Load/Hour
+                  </p>
+                  <span class="ml-auto mr-5">
+                    {{systemData.loadAvg.toFixed(3) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">RAM</h5>
+                <div class="d-flex">
+                  <p class="card-subtitle font-size-sm mb-2 text-muted">
+                    Total Memory
+                  </p>
+                  <span class="ml-auto mr-5">
+                    {{ systemData.totalMemKb.toFixed(3) }} KB
+                  </span>
+                </div>
+                <div class="d-flex">
+                  <p class="card-subtitle font-size-sm mb-2 text-muted">
+                    Free Memory
+                  </p>
+                  <span class="ml-auto mr-5">
+                    {{ systemData.freeMemKb.toFixed(3) }} KB
+                  </span>
+                </div>
+                <h2 class="text-center mt-4">
+                  <span class="badge badge-success">
+                    {{ systemData.freeMemPercent.toFixed(3) }}%
+                  </span>
+                </h2>
+              </div>
+            </div>
+          </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">CPU</h5>
+                  <div class="d-flex">
+                    <p class="card-subtitle font-size-sm mb-2 text-muted">
+                      CPU's
+                    </p>
+                    <span class="ml-auto mr-5">
+                      {{systemData.cups }} CPU's
+                    </span>
+                  </div>
+                  <div class="d-flex">
+                    <p class="card-subtitle font-size-sm mb-2 text-muted">
+                      CPU Usage
+                    </p>
+                    <span class="ml-auto mr-5">
+                      {{ systemData.cpuUsage.toFixed(3) }} GHz
+                    </span>
+                  </div>
+                  <div class="d-flex">
+                    <p class="card-subtitle font-size-sm mb-2 text-muted">
+                      Free CPU
+                    </p>
+                    <span class="ml-auto mr-5">
+                      {{ systemData.freeCPU.toFixed(3) }} GHz
+                    </span>
+                  </div>
+                  <h2 class="text-center">
+                    <span class="badge badge-success">
+                      {{ (systemData.freeCPU/(systemData.cpuUsage + systemData.freeCPU)).toFixed(3) }}%
+                    </span>
+                  </h2>
+                </div>
+              </div>
+            </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    const app = new Vue({
+      el: "#app",
+      data: {
+        loading: false,
+        systemData: null,
+      },
+      methods: {
+        async getData() {
+          let { data } = await axios.get("/system-data");
+          this.systemData = data;
+          console.log(data);
+        },
+      },
+      created() {
+        this.loading = true;
+        this.getData();
+        this.loading = false;
+        setInterval(() => this.getData(), 5000);
+      },
+    });
+  </script>
+</html>
